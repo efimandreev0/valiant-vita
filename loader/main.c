@@ -1611,13 +1611,13 @@ int CallBooleanMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 	case IS_GAMEPAD_KEY_PRESSED:
 		switch ((int)(args[1])) {
 		case AKEYCODE_BUTTON_DPAD_UP:
-			return (pad.buttons & SCE_CTRL_UP) ? 1 : 0;
+			return ((pad.buttons & SCE_CTRL_UP) || pad.ly < 80) ? 1 : 0;
 		case AKEYCODE_BUTTON_DPAD_DOWN:
-			return (pad.buttons & SCE_CTRL_DOWN) ? 1 : 0;
+			return ((pad.buttons & SCE_CTRL_DOWN) || pad.ly > 160) ? 1 : 0;
 		case AKEYCODE_BUTTON_DPAD_LEFT:
-			return (pad.buttons & SCE_CTRL_LEFT) ? 1 : 0;
+			return ((pad.buttons & SCE_CTRL_LEFT) || pad.lx < 80) ? 1 : 0;
 		case AKEYCODE_BUTTON_DPAD_RIGHT:
-			return (pad.buttons & SCE_CTRL_RIGHT) ? 1 : 0;
+			return ((pad.buttons & SCE_CTRL_RIGHT) || pad.lx > 160) ? 1 : 0;
 		case AKEYCODE_BUTTON_A:
 			return (pad.buttons & SCE_CTRL_CROSS) ? 1 : 0;
 		case AKEYCODE_BUTTON_B:
@@ -1864,7 +1864,7 @@ void *pthread_main(void *arg) {
 		sceCtrlPeekBufferPositive(0, &pad, 1);
 		if (pad.buttons & SCE_CTRL_START)
 			UAF_SetDeviceBackPressed();
-		//UAF_SetPadAxisValues(fake_env, NULL, 2, (float)pad.lx, (float)pad.ly);
+		//UAF_SetPadAxisValues(fake_env, NULL, 2, (float)pad.lx / 255.0f, (float)pad.ly / 255.0f);
 		
 		UAF_Step();
 		vglSwapBuffers(GL_FALSE);
@@ -1891,6 +1891,7 @@ int main(int argc, char *argv[]) {
 	//SceUID crasher_thread = sceKernelCreateThread("crasher", crasher, 0x40, 0x1000, 0, 0, NULL);
 	//sceKernelStartThread(crasher_thread, 0, NULL);	
 	
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 
 	scePowerSetArmClockFrequency(444);
