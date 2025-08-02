@@ -1769,7 +1769,58 @@ void *pthread_main(void *arg) {
 	UAF_InitNativeEngine(fake_env, NULL, "ux0:data/valiant", "ux0:data/valiant", "ux0:data/valiant/main.obb", 1);
 	
 	sceClibPrintf("UAF_Init\n");
-	UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "en_GB", 220, 0, 0, 0, 0, 1);
+	int lang = -1;
+	sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, &lang);
+	switch (lang) {
+	case SCE_SYSTEM_PARAM_LANG_JAPANESE:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "ja_JP", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_FRENCH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "fr_FR", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_GERMAN:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "de_DE", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_ITALIAN:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "it_IT", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_SPANISH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "es_ES", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_KOREAN:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "ko_KR", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_PORTUGUESE_BR:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "pt_BR", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_PORTUGUESE_PT:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "pt_PT", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_RUSSIAN:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "ru_RU", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_SWEDISH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "sw_SW", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_POLISH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "po_PL", 220, 0, 0, 0, 0, 1);
+		break;		
+	case SCE_SYSTEM_PARAM_LANG_DUTCH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "nl_NL", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_DANISH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "da_DN", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_NORWEGIAN:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "no_NW", 220, 0, 0, 0, 0, 1);
+		break;
+	case SCE_SYSTEM_PARAM_LANG_FINNISH:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "fi_FI", 220, 0, 0, 0, 0, 1);
+		break;
+	default:
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "en_GB", 220, 0, 0, 0, 0, 1);
+		break;
+	}
 	
 	// For some reason, calling this makes the game start in high quality mode
 	if (!is_lowend) {
