@@ -14,6 +14,11 @@ By doing so, it's basically as if we emulate a minimalist Android environment in
 
 ## Changelog
 
+### v1.1.1
+
+- Fixed a bug that might have caused memory leak issues.
+- Fixed Polish language detection.
+
 ### v1.1
 
 - Added left analog support via simulated dpad presses.
