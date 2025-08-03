@@ -356,7 +356,7 @@ int pthread_attr_init_soloader(pthread_attr_t **attr)
 
 int pthread_attr_setdetachstate_soloader(pthread_attr_t **attr, int state)
 {
-	return pthread_attr_setdetachstate(*attr, state);
+	return pthread_attr_setdetachstate(*attr, !state);
 }
 
 int pthread_attr_setstacksize_soloader(pthread_attr_t **attr, size_t stacksize)
