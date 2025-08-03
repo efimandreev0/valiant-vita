@@ -1803,7 +1803,7 @@ void *pthread_main(void *arg) {
 		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "sw_SW", 220, 0, 0, 0, 0, 1);
 		break;
 	case SCE_SYSTEM_PARAM_LANG_POLISH:
-		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "po_PL", 220, 0, 0, 0, 0, 1);
+		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "pl_PL", 220, 0, 0, 0, 0, 1);
 		break;		
 	case SCE_SYSTEM_PARAM_LANG_DUTCH:
 		UAF_Init(fake_env, NULL, SCREEN_W, SCREEN_H, "nl_NL", 220, 0, 0, 0, 0, 1);
