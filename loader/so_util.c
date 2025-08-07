@@ -17,6 +17,8 @@
 #include "dialog.h"
 #include "so_util.h"
 
+#include <vitaGL.h>
+
 #ifndef SCE_KERNEL_MEMBLOCK_TYPE_USER_RX
 #define SCE_KERNEL_MEMBLOCK_TYPE_USER_RX                 (0x0C20D050)
 #endif
@@ -63,7 +65,7 @@ so_hook hook_thumb(uintptr_t addr, uintptr_t dst) {
 	so_hook h;
 	printf("THUMB HOOK\n");
 	if (addr == 0)
-		return;
+		return h;
 	h.thumb_addr = addr;
 	addr &= ~1;
 	if (addr & 2) {
@@ -83,9 +85,10 @@ so_hook hook_thumb(uintptr_t addr, uintptr_t dst) {
 }
 
 so_hook hook_arm(uintptr_t addr, uintptr_t dst) {
+	so_hook h4;
 	printf("ARM HOOK\n");
 	if (addr == 0)
-		return;
+		return h4;
 	uint32_t hook[2];
 	so_hook h;
 	h.thumb_addr = 0;
@@ -99,8 +102,9 @@ so_hook hook_arm(uintptr_t addr, uintptr_t dst) {
 }
 
 so_hook hook_addr(uintptr_t addr, uintptr_t dst) {
+	so_hook h;
 	if (addr == 0)
-		return;
+		return h;
 	if (addr & 1)
 		return hook_thumb(addr, dst);
 	else
@@ -166,7 +170,7 @@ int _so_load(so_module *mod, SceUID so_blockid, void *so_data, uintptr_t load_ad
 				// Use the .text segment padding as a code cave
 				// Word-align it to make it simpler for instruction arena allocation
 				mod->cave_size = ALIGN_MEM(prog_size - mod->phdr[i].p_memsz, 0x4);
-				mod->cave_base = mod->cave_head = prog_data + mod->phdr[i].p_memsz;
+				mod->cave_base = mod->cave_head = (uintptr_t)(prog_data + mod->phdr[i].p_memsz);
 				mod->cave_base = ALIGN_MEM(mod->cave_base, 0x4);
 				mod->cave_head = mod->cave_base;
 				printf("code cave: %d bytes (@0x%08X).\n", mod->cave_size, mod->cave_base);
@@ -414,8 +418,10 @@ void reloc_err(uintptr_t got0)
 
 __attribute__((naked)) void plt0_stub()
 {
-	register uintptr_t got0 asm("r12");
-	reloc_err(got0);
+    __asm__ (
+        "mov r0, r12\n\t"
+        "b reloc_err"
+    );
 }
 
 int so_resolve(so_module *mod, so_default_dynlib *default_dynlib, int size_default_dynlib, int default_dynlib_only) {
@@ -455,7 +461,7 @@ int so_resolve(so_module *mod, so_default_dynlib *default_dynlib, int size_defau
 				if (!resolved) {
 					void *f = vglGetProcAddress(mod->dynstr + sym->st_name);
 					if (f) {
-						*ptr = f;
+						*ptr = (uintptr_t)f;
 						resolved = 1;
 						break;
 					}
@@ -497,7 +503,7 @@ int so_resolve_with_dummy(so_module *mod, so_default_dynlib *default_dynlib, int
 			if (sym->st_shndx == SHN_UNDEF) {
 				for (int j = 0; j < size_default_dynlib / sizeof(so_default_dynlib); j++) {
 					if (strcmp(mod->dynstr + sym->st_name, default_dynlib[j].symbol) == 0) {
-						*ptr = &ret0;
+						*ptr = (uintptr_t)&ret0;
 						break;
 					}
 				}
@@ -591,7 +597,7 @@ static void trampoline_ldm(so_module *mod, uint32_t *dst) {
 	int baseReg = ((*dst) >> 16) & 0xF;
 	int bitMask = (*dst) & 0xFFFF;
 
-	uint32_t stored = NULL;
+	uint32_t stored = (uintptr_t)NULL;
 	for (int i = 0; i < 16; i++) {
 		if (bitMask & (1 << i)) {
 			// If the register we're reading the offset from is the same as the one we're writing,
@@ -610,10 +616,10 @@ static void trampoline_ldm(so_module *mod, uint32_t *dst) {
 	}
 
 	*ptr++ = 0xe51ff004; // LDR PC, [PC, -0x4] ; jmp to [dst+0x4]
-	*ptr++ = dst+1; // .dword <...>	; [dst+0x4]
+	*ptr++ = (uintptr_t)dst+1; // .dword <...>	; [dst+0x4]
 
 	size_t trampoline_sz =	((uintptr_t)ptr - (uintptr_t)&funct[0]);
-	uintptr_t patch_addr = so_alloc_arena(mod, B_RANGE, B_OFFSET(dst), trampoline_sz);
+	uintptr_t patch_addr = so_alloc_arena(mod, B_RANGE, (uintptr_t)B_OFFSET(dst), trampoline_sz);
 
 	if (!patch_addr) {
 		fatal_error("Failed to patch LDMIA at 0x%08X, unable to allocate space.\n", dst);
@@ -629,7 +635,7 @@ static void trampoline_ldm(so_module *mod, uint32_t *dst) {
 uintptr_t so_symbol(so_module *mod, const char *symbol) {
 	int index = so_symbol_index(mod, symbol);
 	if (index == -1)
-		return NULL;
+		return (uintptr_t)NULL;
 
 	return mod->text_base + mod->dynsym[index].st_value;
 }
@@ -652,7 +658,7 @@ void so_symbol_fix_ldmia(so_module *mod, const char *symbol) {
 		//Is this an LDMIA instruction with a R0-R12 base register?
 		if (((inst & 0xFFF00000) == 0xE8900000) && (((inst >> 16) & 0xF) < 13) ) {
 			sceClibPrintf("Found possibly misaligned LDMIA on 0x%08X, trying to fix it... (instr: 0x%08X, to 0x%08X)\n", addr, *(uint32_t*)addr, mod->patch_head);
-			trampoline_ldm(mod, addr);
+			trampoline_ldm(mod, (uint32_t *)addr);
 		}
 	}
 }

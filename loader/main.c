@@ -7,7 +7,6 @@
  */
 
 #include <vitasdk.h>
-#include <kubridge.h>
 #include <vitashark.h>
 #include <vitaGL.h>
 #include <zlib.h>
@@ -27,11 +26,8 @@
 #include <setjmp.h>
 
 #include <math.h>
-#include <math_neon.h>
-
 #include <errno.h>
 #include <ctype.h>
-#include <setjmp.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -1647,7 +1643,7 @@ void *CallObjectMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 	int lang = -1;
 	switch (methodID) {
 	default:
-		return 0x34343434;
+		return (void *)0x34343434;
 	}
 }
 
@@ -1766,7 +1762,7 @@ void *pthread_main(void *arg) {
 	//UAF_InitMobileSDK(fake_env);
 	
 	sceClibPrintf("UAF_InitNativeEngine\n");
-	UAF_InitNativeEngine(fake_env, NULL, "ux0:data/valiant", "ux0:data/valiant", "ux0:data/valiant/main.obb", 1);
+	UAF_InitNativeEngine(fake_env, NULL, "ux0:data/valiant", "ux0:data/valiant", "ux0:data/valiant/main.obb", (void *)1);
 	
 	sceClibPrintf("UAF_Init\n");
 	int lang = -1;
